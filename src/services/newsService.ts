@@ -155,13 +155,23 @@ const fetchFromNYT = async (filters: NewsFilters): Promise<NewsArticle[]> => {
       ? filters.categories.map(cat => `news_desk:("${cat}")`).join(' OR ')
       : undefined;
 
+    // Format author filter for NYT API
+    const authorQuery = filters.author
+      ? `byline:("${filters.author}")`
+      : undefined;
+
+    // Combine filters if both exist
+    const combinedFq = [newsDeskQuery, authorQuery]
+      .filter(Boolean)
+      .join(' AND ');
+
     const response = await nytClient.get<NYTResponse>('/articlesearch.json', {
       params: {
         'api-key': NYT_API_KEY,
         q: filters.searchQuery || undefined,
         begin_date: beginDate,
         end_date: endDate,
-        fq: newsDeskQuery,
+        fq: combinedFq || undefined,
         sort: 'newest',
         fl: 'headline,abstract,web_url,multimedia,pub_date,news_desk,byline,_id',
         page: 0,
