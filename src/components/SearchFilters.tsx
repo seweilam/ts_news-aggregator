@@ -20,7 +20,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import { NewsFilters } from '../types/news';
 
 const AVAILABLE_CATEGORIES = [
-  { id: '', name: 'All' },
+  { id: 'all', name: 'All' },
   { id: 'business', name: 'Business' },
   { id: 'entertainment', name: 'Entertainment' },
   { id: 'general', name: 'General' },

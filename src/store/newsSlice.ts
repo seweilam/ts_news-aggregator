@@ -18,7 +18,7 @@ const initialState: NewsState = {
       from: null,
       to: null,
     },
-    categories: [''],
+    categories: ['all'],
     sources: ['newsapi'],
   },
   preferences: {

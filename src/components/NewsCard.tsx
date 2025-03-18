@@ -47,7 +47,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ article, onClick }) => {
               backgroundColor: theme.palette.grey[200],
             }}
           />
-        <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+        <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', maxWidth: '100%' }}>
           <Box sx={{ mb: 2 }}>
             <Chip
               label={article.source.name}
@@ -94,7 +94,12 @@ export const NewsCard: React.FC<NewsCardProps> = ({ article, onClick }) => {
               {format(new Date(article.publishedAt), 'MMM d, yyyy')}
             </Typography>
             {article.author && (
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" color="text.secondary" sx={{  display: 'inline-block',
+                maxWidth: '100px',  /* Set your width limit */
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                verticalAlign: 'bottom', }}>
                 By {article.author}
               </Typography>
             )}

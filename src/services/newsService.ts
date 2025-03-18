@@ -54,14 +54,44 @@ export const fetchNews = async (filters: NewsFilters): Promise<NewsArticle[]> =>
 
 const fetchFromNewsAPI = async (filters: NewsFilters): Promise<NewsArticle[]> => {
   try {
-    const response = await newsApiClient.get<NewsAPIResponse>('/top-headlines', {
+    // Format search query with advanced syntax
+    let searchQuery = filters.searchQuery;
+    const queryParts = [];
+
+    // Add search query if exists
+    if (searchQuery) {
+      queryParts.push(`(${searchQuery})`);
+    }
+
+    // Add categories if exist
+    if (filters.categories.length > 0) {
+      const categoryQuery = filters.categories
+        .map(cat => `"${cat}"`)
+        .join(' OR ');
+      queryParts.push(`(${categoryQuery})`);
+    }
+
+    // Add author if exists
+    if (filters.author) {
+      queryParts.push(`${filters.author}`);
+    }
+
+    // Combine all query parts with AND
+    const finalQuery = queryParts.join(' AND ');
+
+    const response = await newsApiClient.get<NewsAPIResponse>('/everything', {
       params: {
-        q: filters.searchQuery || '',
+        q: finalQuery || undefined,
         from: filters.dateRange.from?.toISOString() || undefined,
         to: filters.dateRange.to?.toISOString() || undefined,
-        category: filters.categories.join(','),
         language: 'en',
         apiKey: NEWS_API_KEY,
+        pageSize: 100,
+        page: 1,
+        // Add searchIn parameter to search in title and content
+        searchIn: 'title,content',
+        // Add sortBy parameter for better relevance
+        sortBy: 'relevancy',
       },
     });
 
@@ -89,7 +119,7 @@ const fetchFromGuardian = async (filters: NewsFilters): Promise<NewsArticle[]> =
       q: filters.searchQuery || undefined,
       'from-date': filters.dateRange.from?.toISOString().split('T')[0] || undefined,
       'to-date': filters.dateRange.to?.toISOString().split('T')[0] || undefined,
-      section: filters.categories[0] || undefined,
+      section: filters.categories[0] !== 'all' ? filters.categories[0] : undefined,
       'show-fields': 'headline,bodyText,thumbnail,publishedAt,shortUrl,body',
       'show-tags': 'contributor',
       'order-by': 'newest',
@@ -151,7 +181,7 @@ const fetchFromNYT = async (filters: NewsFilters): Promise<NewsArticle[]> => {
       : undefined;
 
     // Format categories for NYT API
-    const newsDeskQuery = filters.categories.length > 0
+    const newsDeskQuery = filters.categories[0] !== 'all'
       ? filters.categories.map(cat => `news_desk:("${cat}")`).join(' OR ')
       : undefined;
 
