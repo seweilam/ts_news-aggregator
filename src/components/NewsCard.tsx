@@ -36,18 +36,17 @@ export const NewsCard: React.FC<NewsCardProps> = ({ article, onClick }) => {
         onClick={() => onClick(article)}
         sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
       >
-        {article.imageUrl && (
           <CardMedia
             component="img"
             height="200"
-            image={article.imageUrl}
+            width="100%"
+            image={article.imageUrl || './images/news-placeholder.jpg'}
             alt={article.title}
             sx={{
               objectFit: 'cover',
               backgroundColor: theme.palette.grey[200],
             }}
           />
-        )}
         <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
           <Box sx={{ mb: 2 }}>
             <Chip
@@ -55,12 +54,12 @@ export const NewsCard: React.FC<NewsCardProps> = ({ article, onClick }) => {
               size="small"
               sx={{ mr: 1 }}
             />
-            <Chip
+           { article.category && <Chip
               label={article.category}
               size="small"
               color="secondary"
               variant="outlined"
-            />
+            />}
           </Box>
           <Typography
             gutterBottom

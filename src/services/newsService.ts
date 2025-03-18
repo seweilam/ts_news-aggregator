@@ -11,9 +11,6 @@ const newsApiClient = axios.create({
 
 const guardianClient = axios.create({
   baseURL: '/guardian',
-  headers: {
-    'api-key': GUARDIAN_API_KEY,
-  },
 });
 
 const nytClient = axios.create({
@@ -71,6 +68,7 @@ const fetchFromNewsAPI = async (filters: NewsFilters): Promise<NewsArticle[]> =>
     return response.data.articles.map((article: any) => ({
       ...article,
       id: `newsapi-${article.url}`,
+      imageUrl: article.urlToImage,
       source: {
         id: article.source.id || article.source.name,
         name: article.source.name,
@@ -87,27 +85,44 @@ const fetchFromGuardian = async (filters: NewsFilters): Promise<NewsArticle[]> =
   try {
     const response = await guardianClient.get<GuardianResponse>('/search', {
       params: {
-        q: filters.searchQuery,
-        'from-date': filters.dateRange.from?.toISOString().split('T')[0],
-        'to-date': filters.dateRange.to?.toISOString().split('T')[0],
-        section: filters.categories.join(','),
-        'show-fields': 'headline,bodyText,thumbnail,publishedAt',
+        'api-key': GUARDIAN_API_KEY,
+        q: filters.searchQuery || undefined,
+        'from-date': filters.dateRange.from?.toISOString().split('T')[0] || undefined,
+        'to-date': filters.dateRange.to?.toISOString().split('T')[0] || undefined,
+        section: filters.categories[0] || undefined,
+        'show-fields': 'headline,bodyText,thumbnail,publishedAt,shortUrl,body',
+        'show-tags': 'contributor',
+        'order-by': 'newest',
+        'page-size': 10,
+        'show-references': 'all',
+        'show-elements': 'all',
+        'show-rights': 'syndicatable',
+        'show-section': true,
+        'show-blocks': 'all',
+        'show-pillar': true,
       },
     });
 
     return response.data.response.results.map((article: any) => ({
       id: `guardian-${article.id}`,
-      title: article.fields.headline,
-      description: article.fields.bodyText.substring(0, 200),
-      url: article.webUrl,
-      imageUrl: article.fields.thumbnail,
-      publishedAt: article.fields.publishedAt,
+      title: article.fields?.headline || article.webTitle,
+      description: article.fields?.bodyText?.substring(0, 200) || article.webTitle,
+      url: article.fields?.shortUrl || article.webUrl,
+      imageUrl: article.fields?.thumbnail || undefined,
+      publishedAt: article.fields?.publishedAt || article.webPublicationDate,
       source: {
         id: 'guardian',
         name: 'The Guardian',
         url: 'https://www.theguardian.com',
       },
       category: article.sectionName,
+      type: article.type,
+      pillarName: article.pillarName,
+      author: article.tags?.find((tag: any) => tag.type === 'contributor')?.webTitle,
+      references: article.references,
+      blocks: article.blocks,
+      elements: article.elements,
+      rights: article.rights,
     }));
   } catch (error) {
     console.error('Error fetching from Guardian:', error);
@@ -150,8 +165,8 @@ const fetchFromNYT = async (filters: NewsFilters): Promise<NewsArticle[]> => {
       title: article.headline.main,
       description: article.abstract,
       url: article.web_url,
-      imageUrl: article.multimedia.find((media: any) => media.subtype === 'large')?.url || 
-                article.multimedia.find((media: any) => media.subtype === 'mediumThreeByTwo210')?.url,
+      imageUrl: `https://static01.nyt.com/${article.multimedia.find((media: any) => media.subtype === 'large')?.url || 
+                article.multimedia.find((media: any) => media.subtype === 'mediumThreeByTwo210')?.url}`,
       publishedAt: article.pub_date,
       source: {
         id: 'nyt',
