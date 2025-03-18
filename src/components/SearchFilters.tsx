@@ -81,9 +81,17 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
     });
   };
 
+  const handleAuthorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    onFiltersChange({
+      ...filters,
+      author: event.target.value,
+    });
+  };
+
   const clearFilters = () => {
     onFiltersChange({
       searchQuery: '',
+      author: '',
       dateRange: {
         from: null,
         to: null,
@@ -110,14 +118,19 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
           value={filters.searchQuery}
           onChange={handleSearchChange}
           size="small"
+          sx={{ minWidth: '200px' }}
         />
-        <IconButton
-          onClick={clearFilters}
-          disabled={!filters.searchQuery && !filters.categories.length && !filters.sources.length}
-        >
-          <ClearIcon />
-        </IconButton>
+
+        <TextField
+          fullWidth
+          label="Author"
+          value={filters.author}
+          onChange={handleAuthorChange}
+          size="small"
+          sx={{ minWidth: '200px' }}
+        />
       </Box>
+
 
       <Box
         sx={{
@@ -125,6 +138,7 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
           gap: 2,
           flexWrap: 'wrap',
           alignItems: 'flex-start',
+          justifyContent: 'space-between',
         }}
       >
         <FormControl size="small" sx={{ minWidth: 200 }}>
@@ -152,7 +166,6 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
         <FormControl size="small" sx={{ minWidth: 200 }}>
           <InputLabel>Sources</InputLabel>
           <Select
-            multiple
             value={filters.sources}
             onChange={handleSourceChange}
             label="Sources"

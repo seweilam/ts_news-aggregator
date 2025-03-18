@@ -13,12 +13,13 @@ const initialState: NewsState = {
   articles: [],
   filters: {
     searchQuery: '',
+    author: '',
     dateRange: {
       from: null,
       to: null,
     },
     categories: [''],
-    sources: [],//newsapi
+    sources: ['newsapi'],
   },
   preferences: {
     preferredSources: [],
@@ -50,6 +51,9 @@ const newsSlice = createSlice({
     },
     updateSearchQuery: (state, action: PayloadAction<string>) => {
       state.filters.searchQuery = action.payload;
+    },
+    updateAuthor: (state, action: PayloadAction<string>) => {
+      state.filters.author = action.payload;
     },
     updateDateRange: (state, action: PayloadAction<{ from: Date | null; to: Date | null }>) => {
       state.filters.dateRange = action.payload;

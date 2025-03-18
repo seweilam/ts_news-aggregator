@@ -83,25 +83,34 @@ const fetchFromNewsAPI = async (filters: NewsFilters): Promise<NewsArticle[]> =>
 
 const fetchFromGuardian = async (filters: NewsFilters): Promise<NewsArticle[]> => {
   try {
-    const response = await guardianClient.get<GuardianResponse>('/search', {
-      params: {
-        'api-key': GUARDIAN_API_KEY,
-        q: filters.searchQuery || undefined,
-        'from-date': filters.dateRange.from?.toISOString().split('T')[0] || undefined,
-        'to-date': filters.dateRange.to?.toISOString().split('T')[0] || undefined,
-        section: filters.categories[0] || undefined,
-        'show-fields': 'headline,bodyText,thumbnail,publishedAt,shortUrl,body',
-        'show-tags': 'contributor',
-        'order-by': 'newest',
-        'page-size': 10,
-        'show-references': 'all',
-        'show-elements': 'all',
-        'show-rights': 'syndicatable',
-        'show-section': true,
-        'show-blocks': 'all',
-        'show-pillar': true,
-      },
-    });
+    // Build query parameters
+    const params: Record<string, any> = {
+      'api-key': GUARDIAN_API_KEY,
+      q: filters.searchQuery || undefined,
+      'from-date': filters.dateRange.from?.toISOString().split('T')[0] || undefined,
+      'to-date': filters.dateRange.to?.toISOString().split('T')[0] || undefined,
+      section: filters.categories[0] || undefined,
+      'show-fields': 'headline,bodyText,thumbnail,publishedAt,shortUrl,body',
+      'show-tags': 'contributor',
+      'order-by': 'newest',
+      'page-size': 10,
+      'page': 1,
+      'show-references': 'all',
+      'show-elements': 'all',
+      'show-rights': 'syndicatable',
+      'show-section': true,
+      'show-blocks': 'all',
+      'show-pillar': true,
+    };
+
+    // Add author filter if provided
+    if (filters.author) {
+      // Format author name for Guardian API (replace spaces with hyphens and make lowercase)
+      const formattedAuthor = filters.author.toLowerCase().replace(/\s+/g, '-');
+      params.tag = `profile/${formattedAuthor}`;
+    }
+
+    const response = await guardianClient.get<GuardianResponse>('/search', { params });
 
     return response.data.response.results.map((article: any) => ({
       id: `guardian-${article.id}`,

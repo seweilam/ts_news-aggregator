@@ -18,6 +18,7 @@ export interface NewsSource {
 
 export interface NewsFilters {
   searchQuery: string;
+  author: string;
   dateRange: {
     from: Date | null;
     to: Date | null;
