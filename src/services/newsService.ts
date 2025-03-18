@@ -6,18 +6,21 @@ const GUARDIAN_API_KEY = process.env.REACT_APP_GUARDIAN_API_KEY;
 const NYT_API_KEY = process.env.REACT_APP_NYT_API_KEY;
 
 const newsApiClient = axios.create({
-  baseURL: 'https://newsapi.org/v2',
+  baseURL: '/newsapi',
 });
 
 const guardianClient = axios.create({
-  baseURL: 'https://content.guardianapis.com',
+  baseURL: '/guardian',
   headers: {
     'api-key': GUARDIAN_API_KEY,
   },
 });
 
 const nytClient = axios.create({
-  baseURL: 'https://api.nytimes.com/svc/archive/v1/',
+  baseURL: '/nyt',
+  headers: {
+    'api-key': NYT_API_KEY,
+  },
 });
 
 export const fetchNews = async (filters: NewsFilters): Promise<NewsArticle[]> => {
@@ -64,7 +67,6 @@ const fetchFromNewsAPI = async (filters: NewsFilters): Promise<NewsArticle[]> =>
         apiKey: NEWS_API_KEY,
       },
     });
-
 
     return response.data.articles.map((article: any) => ({
       ...article,
@@ -115,14 +117,31 @@ const fetchFromGuardian = async (filters: NewsFilters): Promise<NewsArticle[]> =
 
 const fetchFromNYT = async (filters: NewsFilters): Promise<NewsArticle[]> => {
   try {
-    const response = await nytClient.get<NYTResponse>(`/${2025}/${1}.json`, {
+    // Format dates for NYT API (YYYYMMDD)
+    const beginDate = filters.dateRange.from 
+      ? filters.dateRange.from.toISOString().replace(/-/g, '').split('T')[0]
+      : undefined;
+    
+    const endDate = filters.dateRange.to
+      ? filters.dateRange.to.toISOString().replace(/-/g, '').split('T')[0]
+      : undefined;
+
+    // Format categories for NYT API
+    const newsDeskQuery = filters.categories.length > 0
+      ? filters.categories.map(cat => `news_desk:("${cat}")`).join(' OR ')
+      : undefined;
+
+    const response = await nytClient.get<NYTResponse>('/articlesearch.json', {
       params: {
-        // q: filters.searchQuery,
-        // begin_date: filters.dateRange.from?.toISOString().replace(/-/g, ''),
-        // end_date: filters.dateRange.to?.toISOString().replace(/-/g, ''),
-        // fq: filters.categories.map(cat => `news_desk:(${cat})`).join(' OR '),
         'api-key': NYT_API_KEY,
-        dataType: 'jsonp',
+        q: filters.searchQuery || undefined,
+        begin_date: beginDate,
+        end_date: endDate,
+        fq: newsDeskQuery,
+        sort: 'newest',
+        fl: 'headline,abstract,web_url,multimedia,pub_date,news_desk,byline,_id',
+        page: 0,
+        rows: 10,
       },
     });
 
@@ -131,7 +150,8 @@ const fetchFromNYT = async (filters: NewsFilters): Promise<NewsArticle[]> => {
       title: article.headline.main,
       description: article.abstract,
       url: article.web_url,
-      imageUrl: article.multimedia[0]?.url,
+      imageUrl: article.multimedia.find((media: any) => media.subtype === 'large')?.url || 
+                article.multimedia.find((media: any) => media.subtype === 'mediumThreeByTwo210')?.url,
       publishedAt: article.pub_date,
       source: {
         id: 'nyt',
@@ -139,7 +159,7 @@ const fetchFromNYT = async (filters: NewsFilters): Promise<NewsArticle[]> => {
         url: 'https://www.nytimes.com',
       },
       category: article.news_desk,
-      author: article.byline.original,
+      author: article.byline?.original,
     }));
   } catch (error) {
     console.error('Error fetching from NYT:', error);
