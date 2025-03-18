@@ -12,6 +12,7 @@ import {
   useTheme,
   useMediaQuery,
   SelectChangeEvent,
+  Grid,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -111,99 +112,109 @@ export const SearchFilters: React.FC<SearchFiltersProps> = ({
         gap: 2,
       }}
     >
-      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-        <TextField
-          fullWidth
-          label="Search articles"
-          value={filters.searchQuery}
-          onChange={handleSearchChange}
-          size="small"
-          sx={{ minWidth: '200px' }}
-        />
+      <Box>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Search articles"
+              value={filters.searchQuery}
+              onChange={handleSearchChange}
+              size="small"
+            sx={{ minWidth: '200px' }}
+          />
+        </Grid>
 
-        <TextField
-          fullWidth
-          label="Author"
-          value={filters.author}
-          onChange={handleAuthorChange}
-          size="small"
-          sx={{ minWidth: '200px' }}
-        />
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="Author"
+            value={filters.author}
+            onChange={handleAuthorChange}
+            size="small"
+              sx={{ minWidth: '200px' }}
+            />
+          </Grid>
+        </Grid>
       </Box>
 
 
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 2,
-          flexWrap: 'wrap',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-        }}
-      >
-        <FormControl size="small" sx={{ minWidth: 200 }}>
-          <InputLabel>Categories</InputLabel>
-          <Select
-            value={filters.categories}
-            onChange={handleCategoryChange}
-            label="Categories"
-            renderValue={(selected) => (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                {(selected as string[]).map((value) => (
-                  <Chip key={value} label={AVAILABLE_CATEGORIES.find((c) => c.id === value)?.name} size="small" />
-                ))}
-              </Box>
-            )}
-          >
-            {AVAILABLE_CATEGORIES.map((category) => (
-              <MenuItem key={category.id} value={category.id}>
-                {category.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+      <Grid container spacing={4}>
+        <Grid item xs={12} sm={6} md={4}>
+          <FormControl fullWidth size="small">
+            <InputLabel>Categories</InputLabel>
+            <Select
+              value={filters.categories}
+              onChange={handleCategoryChange}
+              label="Categories"
+              renderValue={(selected) => (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  {(selected as string[]).map((value) => (
+                    <Chip key={value} label={AVAILABLE_CATEGORIES.find((c) => c.id === value)?.name} size="small" />
+                  ))}
+                </Box>
+              )}
+            >
+              {AVAILABLE_CATEGORIES.map((category) => (
+                <MenuItem key={category.id} value={category.id}>
+                  {category.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
 
-        <FormControl size="small" sx={{ minWidth: 200 }}>
-          <InputLabel>Sources</InputLabel>
-          <Select
-            value={filters.sources}
-            onChange={handleSourceChange}
-            label="Sources"
-            renderValue={(selected) => (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                {(selected as string[]).map((value) => (
-                  <Chip
-                    key={value}
-                    label={AVAILABLE_SOURCES.find((s) => s.id === value)?.name}
-                    size="small"
-                  />
-                ))}
-              </Box>
-            )}
-          >
-            {AVAILABLE_SOURCES.map((source) => (
-              <MenuItem key={source.id} value={source.id}>
-                {source.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <Grid item xs={12} sm={6} md={4}>
+          <FormControl fullWidth size="small">
+            <InputLabel>Sources</InputLabel>
+            <Select
+              value={filters.sources}
+              onChange={handleSourceChange}
+              label="Sources"
+              renderValue={(selected) => (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  {(selected as string[]).map((value) => (
+                    <Chip
+                      key={value}
+                      label={AVAILABLE_SOURCES.find((s) => s.id === value)?.name}
+                      size="small"
+                    />
+                  ))}
+                </Box>
+              )}
+            >
+              {AVAILABLE_SOURCES.map((source) => (
+                <MenuItem key={source.id} value={source.id}>
+                  {source.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
 
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
-          <DatePicker
-            label="From Date"
-            value={filters.dateRange.from}
-            onChange={(date: Date | null) => handleDateChange(date, 'from')}
-            slotProps={{ textField: { size: 'small' } }}
-          />
-          <DatePicker
-            label="To Date"
-            value={filters.dateRange.to}
-            onChange={(date: Date | null) => handleDateChange(date, 'to')}
-            slotProps={{ textField: { size: 'small' } }}
-          />
-        </LocalizationProvider>
-      </Box>
+        <Grid item xs={12} md={4}>
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <DatePicker
+                  label="From Date"
+                  value={filters.dateRange.from}
+                  onChange={(date: Date | null) => handleDateChange(date, 'from')}
+                  slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <DatePicker
+                  label="To Date"
+                  value={filters.dateRange.to}
+                  onChange={(date: Date | null) => handleDateChange(date, 'to')}
+                  slotProps={{ textField: { size: 'small', fullWidth: true } }}
+                />
+              </Grid>
+            </Grid>
+          </LocalizationProvider>
+        </Grid>
+      </Grid>
     </Paper>
   );
 }; 

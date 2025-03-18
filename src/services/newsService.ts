@@ -86,7 +86,7 @@ const fetchFromNewsAPI = async (filters: NewsFilters): Promise<NewsArticle[]> =>
         to: filters.dateRange.to?.toISOString() || undefined,
         language: 'en',
         apiKey: NEWS_API_KEY,
-        pageSize: 100,
+        pageSize: 10,
         page: 1,
         // Add searchIn parameter to search in title and content
         searchIn: 'title,content',
