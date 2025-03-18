@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  news-aggregator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_NEWS_API_KEY=${NEWS_API_KEY}
+      - REACT_APP_GUARDIAN_API_KEY=${GUARDIAN_API_KEY}
+      - REACT_APP_NYT_API_KEY=${NYT_API_KEY}
+    volumes:
+      - .:/app
+      - /app/node_modules 
