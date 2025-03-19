@@ -20,39 +20,48 @@ const nytClient = axios.create({
   },
 });
 
-export const fetchNews = async (filters: NewsFilters): Promise<NewsArticle[]> => {
+interface NewsResponse {
+  articles: NewsArticle[];
+  totalResults: number;
+}
+
+export const fetchNews = async (filters: NewsFilters, page: number): Promise<NewsResponse> => {
   try {
     const fetchPromises = [];
 
     // Only fetch from selected sources
     if (filters.sources.includes('newsapi')) {
-      fetchPromises.push(fetchFromNewsAPI(filters));
+      fetchPromises.push(fetchFromNewsAPI(filters, page));
     }
     if (filters.sources.includes('guardian')) {
-      fetchPromises.push(fetchFromGuardian(filters));
+      fetchPromises.push(fetchFromGuardian(filters, page));
     }
     if (filters.sources.includes('nyt')) {
-      fetchPromises.push(fetchFromNYT(filters));
+      fetchPromises.push(fetchFromNYT(filters, page));
     }
 
     // If no sources are selected, return empty array
     if (fetchPromises.length === 0) {
-      return [];
+      return { articles: [], totalResults: 0 };
     }
 
     const responses = await Promise.all(fetchPromises);
-    const allArticles = responses.flat();
+    const allArticles = responses.map(r => r.articles).flat();
+    const totalResults = responses.reduce((sum, r) => sum + r.totalResults, 0);
 
-    return allArticles.sort((a, b) => 
-      new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-    );
+    return {
+      articles: allArticles.sort((a, b) => 
+        new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+      ),
+      totalResults
+    };
   } catch (error) {
     console.error('Error fetching news:', error);
-    return [];
+    return { articles: [], totalResults: 0 };
   }
 };
 
-const fetchFromNewsAPI = async (filters: NewsFilters): Promise<NewsArticle[]> => {
+const fetchFromNewsAPI = async (filters: NewsFilters, page: number): Promise<NewsResponse> => {
   try {
     // Format search query with advanced syntax
     let searchQuery = filters.searchQuery;
@@ -87,7 +96,7 @@ const fetchFromNewsAPI = async (filters: NewsFilters): Promise<NewsArticle[]> =>
         language: 'en',
         apiKey: NEWS_API_KEY,
         pageSize: 10,
-        page: 1,
+        page: page,
         // Add searchIn parameter to search in title and content
         searchIn: 'title,content',
         // Add sortBy parameter for better relevance
@@ -95,23 +104,26 @@ const fetchFromNewsAPI = async (filters: NewsFilters): Promise<NewsArticle[]> =>
       },
     });
 
-    return response.data.articles.map((article: any) => ({
-      ...article,
-      id: `newsapi-${article.url}`,
-      imageUrl: article.urlToImage,
-      source: {
-        id: article.source.id || article.source.name,
-        name: article.source.name,
-        url: article.url,
-      },
-    }));
+    return {
+      articles: response.data.articles.map((article: any) => ({
+        ...article,
+        id: `newsapi-${article.url}`,
+        imageUrl: article.urlToImage,
+        source: {
+          id: article.source.id || article.source.name,
+          name: article.source.name,
+          url: article.url,
+        },
+      })),
+      totalResults: response.data.totalResults
+    };
   } catch (error) {
     console.error('Error fetching from NewsAPI:', error);
-    return [];
+    return { articles: [], totalResults: 0 };
   }
 };
 
-const fetchFromGuardian = async (filters: NewsFilters): Promise<NewsArticle[]> => {
+const fetchFromGuardian = async (filters: NewsFilters, page: number): Promise<NewsResponse> => {
   try {
     // Build query parameters
     const params: Record<string, any> = {
@@ -124,7 +136,7 @@ const fetchFromGuardian = async (filters: NewsFilters): Promise<NewsArticle[]> =
       'show-tags': 'contributor',
       'order-by': 'newest',
       'page-size': 10,
-      'page': 1,
+      'page': page,
       'show-references': 'all',
       'show-elements': 'all',
       'show-rights': 'syndicatable',
@@ -142,34 +154,37 @@ const fetchFromGuardian = async (filters: NewsFilters): Promise<NewsArticle[]> =
 
     const response = await guardianClient.get<GuardianResponse>('/search', { params });
 
-    return response.data.response.results.map((article: any) => ({
-      id: `guardian-${article.id}`,
-      title: article.fields?.headline || article.webTitle,
-      description: article.fields?.bodyText?.substring(0, 200) || article.webTitle,
-      url: article.fields?.shortUrl || article.webUrl,
-      imageUrl: article.fields?.thumbnail || undefined,
-      publishedAt: article.fields?.publishedAt || article.webPublicationDate,
-      source: {
-        id: 'guardian',
-        name: 'The Guardian',
-        url: 'https://www.theguardian.com',
-      },
-      category: article.sectionName,
-      type: article.type,
-      pillarName: article.pillarName,
-      author: article.tags?.find((tag: any) => tag.type === 'contributor')?.webTitle,
-      references: article.references,
-      blocks: article.blocks,
-      elements: article.elements,
-      rights: article.rights,
-    }));
+    return {
+      articles: response.data.response.results.map((article: any) => ({
+        id: `guardian-${article.id}`,
+        title: article.fields?.headline || article.webTitle,
+        description: article.fields?.bodyText?.substring(0, 200) || article.webTitle,
+        url: article.fields?.shortUrl || article.webUrl,
+        imageUrl: article.fields?.thumbnail || undefined,
+        publishedAt: article.fields?.publishedAt || article.webPublicationDate,
+        source: {
+          id: 'guardian',
+          name: 'The Guardian',
+          url: 'https://www.theguardian.com',
+        },
+        category: article.sectionName,
+        type: article.type,
+        pillarName: article.pillarName,
+        author: article.tags?.find((tag: any) => tag.type === 'contributor')?.webTitle,
+        references: article.references,
+        blocks: article.blocks,
+        elements: article.elements,
+        rights: article.rights,
+      })),
+      totalResults: response.data.response.total
+    };
   } catch (error) {
     console.error('Error fetching from Guardian:', error);
-    return [];
+    return { articles: [], totalResults: 0 };
   }
 };
 
-const fetchFromNYT = async (filters: NewsFilters): Promise<NewsArticle[]> => {
+const fetchFromNYT = async (filters: NewsFilters, page: number): Promise<NewsResponse> => {
   try {
     // Format dates for NYT API (YYYYMMDD)
     const beginDate = filters.dateRange.from 
@@ -204,32 +219,35 @@ const fetchFromNYT = async (filters: NewsFilters): Promise<NewsArticle[]> => {
         fq: combinedFq || undefined,
         sort: 'newest',
         fl: 'headline,abstract,web_url,multimedia,pub_date,news_desk,byline,_id',
-        page: 0,
+        page: page-1,
         rows: 10,
       },
     });
 
-    return response.data.response.docs.map((article: any) => ({
-      id: `nyt-${article._id}`,
-      title: article.headline.main,
-      description: article.abstract,
-      url: article.web_url,
-      imageUrl: article.multimedia.find((media: any) => media.subtype === 'large')?.url 
-                ? `https://static01.nyt.com/${article.multimedia.find((media: any) => media.subtype === 'large')?.url}` 
-                : article.multimedia.find((media: any) => media.subtype === 'mediumThreeByTwo210')?.url 
-                ? `https://static01.nyt.com/${article.multimedia.find((media: any) => media.subtype === 'mediumThreeByTwo210')?.url}` 
-                : undefined,
-      publishedAt: article.pub_date,
-      source: {
-        id: 'nyt',
-        name: 'The New York Times',
-        url: 'https://www.nytimes.com',
-      },
-      category: article.news_desk,
-      author: article.byline?.original,
-    }));
+    return {
+      articles: response.data.response.docs.map((article: any) => ({
+        id: `nyt-${article._id}`,
+        title: article.headline.main,
+        description: article.abstract,
+        url: article.web_url,
+        imageUrl: article.multimedia.find((media: any) => media.subtype === 'large')?.url 
+                  ? `https://static01.nyt.com/${article.multimedia.find((media: any) => media.subtype === 'large')?.url}` 
+                  : article.multimedia.find((media: any) => media.subtype === 'mediumThreeByTwo210')?.url 
+                  ? `https://static01.nyt.com/${article.multimedia.find((media: any) => media.subtype === 'mediumThreeByTwo210')?.url}` 
+                  : undefined,
+        publishedAt: article.pub_date,
+        source: {
+          id: 'nyt',
+          name: 'The New York Times',
+          url: 'https://www.nytimes.com',
+        },
+        category: article.news_desk,
+        author: article.byline?.original,
+      })),
+      totalResults: response.data.response.meta.hits
+    };
   } catch (error) {
     console.error('Error fetching from NYT:', error);
-    return [];
+    return { articles: [], totalResults: 0 };
   }
 }; 

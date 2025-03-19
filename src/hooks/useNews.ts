@@ -3,20 +3,26 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useQuery } from 'react-query';
 import { RootState } from '../store/store';
 import { fetchNews } from '../services/newsService';
-import { NewsFilters } from '../types/news';
+import { NewsFilters, NewsArticle } from '../types/news';
 import {
   setArticles,
   setLoading,
   setError,
+  setTotalPages,
 } from '../store/newsSlice';
+
+interface NewsResponse {
+  articles: NewsArticle[];
+  totalResults: number;
+}
 
 export const useNews = () => {
   const dispatch = useDispatch();
-  const { filters } = useSelector((state: RootState) => state.news);
+  const { filters, page, totalPages } = useSelector((state: RootState) => state.news);
 
-  const { data: articles, isLoading, error } = useQuery(
-    ['news', filters],
-    () => fetchNews(filters),
+  const { data: response, isLoading, error } = useQuery<NewsResponse>(
+    ['news', filters, page],
+    () => fetchNews(filters, page),
     {
       enabled: true,
       staleTime: 5 * 60 * 1000, // 5 minutes
@@ -25,10 +31,14 @@ export const useNews = () => {
   );
 
   useEffect(() => {
-    if (articles) {
-      dispatch(setArticles(articles));
+    if (response) {
+      dispatch(setArticles(response.articles));
+      
+      // Calculate total pages (assuming 10 articles per page)
+      const calculatedTotalPages = Math.ceil(response.totalResults / 10);
+      dispatch(setTotalPages(calculatedTotalPages));
     }
-  }, [articles, dispatch]);
+  }, [response, dispatch]);
 
   useEffect(() => {
     dispatch(setLoading(isLoading));
@@ -41,9 +51,11 @@ export const useNews = () => {
   }, [error, dispatch]);
 
   return {
-    articles,
+    articles: response?.articles || [],
     isLoading,
     error,
     filters,
+    page,
+    totalPages,
   };
 }; 

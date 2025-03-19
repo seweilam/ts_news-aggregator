@@ -3,6 +3,8 @@ import { NewsArticle, NewsFilters, NewsPreferences } from '../types/news';
 
 interface NewsState {
   articles: NewsArticle[];
+  page: number;
+  totalPages: number;
   filters: NewsFilters;
   preferences: NewsPreferences;
   isLoading: boolean;
@@ -11,6 +13,8 @@ interface NewsState {
 
 const initialState: NewsState = {
   articles: [],
+  page: 1,
+  totalPages: 1,
   filters: {
     searchQuery: '',
     author: '',
@@ -19,7 +23,7 @@ const initialState: NewsState = {
       to: null,
     },
     categories: ['all'],
-    sources: ['newsapi'],
+    sources: [' '],
   },
   preferences: {
     preferredSources: [],
@@ -36,6 +40,9 @@ const newsSlice = createSlice({
   reducers: {
     setArticles: (state, action: PayloadAction<NewsArticle[]>) => {
       state.articles = action.payload;
+    },
+    setTotalPages: (state, action: PayloadAction<number>) => {
+      state.totalPages = action.payload;
     },
     setFilters: (state, action: PayloadAction<NewsFilters>) => {
       state.filters = action.payload;
@@ -94,6 +101,9 @@ const newsSlice = createSlice({
         author => author !== action.payload
       );
     },
+    setPage: (state, action: PayloadAction<number>) => {
+      state.page = action.payload;
+    },
   },
 });
 
@@ -103,6 +113,8 @@ export const {
   setPreferences,
   setLoading,
   setError,
+  setPage,
+  setTotalPages,
   updateSearchQuery,
   updateDateRange,
   updateCategories,
