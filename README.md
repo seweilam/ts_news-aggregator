@@ -1,6 +1,6 @@
 # News Aggregator
 
-A modern news aggregator website that pulls articles from various sources and displays them in a clean, easy-to-read format. Built with Next.js, TypeScript, and Material-UI.
+A modern news aggregator website that pulls articles from various sources and displays them in a clean, easy-to-read format. Built with ReactJs, TypeScript, and Material-UI.
 
 ## Features
 
@@ -28,9 +28,9 @@ The application fetches news from the following sources:
 Create a `.env.local` file in the root directory with the following variables:
 
 ```env
-NEXT_PUBLIC_NEWS_API_KEY=your_newsapi_key
-NEXT_PUBLIC_GUARDIAN_API_KEY=your_guardian_key
-NEXT_PUBLIC_NYT_API_KEY=your_nyt_key
+REACT_APP_NEWS_API_KEY=your_newsapi_key
+REACT_APP_GUARDIAN_API_KEY=your_guardian_key
+REACT_APP_NYT_API_KEY=your_nyt_key
 ```
 
 You can obtain API keys from:
