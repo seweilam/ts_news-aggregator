@@ -5,16 +5,25 @@ const NEWS_API_KEY = process.env.REACT_APP_NEWS_API_KEY;
 const GUARDIAN_API_KEY = process.env.REACT_APP_GUARDIAN_API_KEY;
 const NYT_API_KEY = process.env.REACT_APP_NYT_API_KEY;
 
+
+console.log(process.env.NODE_ENV === 'production');
+
 const newsApiClient = axios.create({
-  baseURL: '/newsapi',
+  baseURL: process.env.NODE_ENV === 'production'
+  ? 'http://localhost/newsapi'
+  : '/newsapi',
 });
 
 const guardianClient = axios.create({
-  baseURL: '/guardian',
+  baseURL: process.env.NODE_ENV === 'production'
+  ? 'http://localhost/guardian'
+  : '/guardian',
 });
 
 const nytClient = axios.create({
-  baseURL: '/nyt',
+  baseURL: process.env.NODE_ENV === 'production'
+  ? 'http://localhost/nyt'
+  : '/nyt',
   headers: {
     'api-key': NYT_API_KEY,
   },
