@@ -214,8 +214,11 @@ const fetchFromNYT = async (filters: NewsFilters): Promise<NewsArticle[]> => {
       title: article.headline.main,
       description: article.abstract,
       url: article.web_url,
-      imageUrl: `https://static01.nyt.com/${article.multimedia.find((media: any) => media.subtype === 'large')?.url || 
-                article.multimedia.find((media: any) => media.subtype === 'mediumThreeByTwo210')?.url}`,
+      imageUrl: article.multimedia.find((media: any) => media.subtype === 'large')?.url 
+                ? `https://static01.nyt.com/${article.multimedia.find((media: any) => media.subtype === 'large')?.url}` 
+                : article.multimedia.find((media: any) => media.subtype === 'mediumThreeByTwo210')?.url 
+                ? `https://static01.nyt.com/${article.multimedia.find((media: any) => media.subtype === 'mediumThreeByTwo210')?.url}` 
+                : undefined,
       publishedAt: article.pub_date,
       source: {
         id: 'nyt',
