@@ -31,6 +31,7 @@ Create a `.env.local` file in the root directory with the following variables:
 REACT_APP_NEWS_API_KEY=your_newsapi_key
 REACT_APP_GUARDIAN_API_KEY=your_guardian_key
 REACT_APP_NYT_API_KEY=your_nyt_key
+NODE_ENV=development
 ```
 
 You can obtain API keys from:
@@ -42,8 +43,8 @@ You can obtain API keys from:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/news-aggregator.git
-cd news-aggregator
+git clone https://github.com/seweilam/ts_news-aggregator
+cd ts_news-aggregator
 ```
 
 2. Install dependencies:
@@ -78,18 +79,6 @@ yarn docker:up
 yarn docker:down
 ```
 
-## Production Build
-
-1. Build the application:
-```bash
-yarn build
-```
-
-2. Start the production server:
-```bash
-yarn start
-```
-
 ## Technologies Used
 
 - React.js
@@ -100,13 +89,6 @@ yarn start
 - Axios
 - Docker
 
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
 ## License
 
