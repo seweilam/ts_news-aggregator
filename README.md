@@ -92,7 +92,7 @@ yarn start
 
 ## Technologies Used
 
-- Next.js
+- React.js
 - TypeScript
 - Material-UI
 - Redux Toolkit

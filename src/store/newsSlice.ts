@@ -23,7 +23,7 @@ const initialState: NewsState = {
       to: null,
     },
     categories: ['all'],
-    sources: [' '],
+    sources: ['newsapi'],
   },
   preferences: {
     preferredSources: [],
