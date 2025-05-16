@@ -20,7 +20,7 @@ The application fetches news from the following sources:
 ## Prerequisites
 
 - Node.js 18.x or later
-- Yarn package manager
+- pmpm package manager
 - Docker and Docker Compose (optional, for containerized deployment)
 
 ## Environment Variables
@@ -49,7 +49,7 @@ cd ts_news-aggregator
 
 2. Install dependencies:
 ```bash
-yarn install
+pnpm install
 ```
 
 ## Development
@@ -57,7 +57,7 @@ yarn install
 Run the development server:
 
 ```bash
-yarn dev
+pnpm start
 ```
 
 The application will be available at http://localhost:3000
@@ -66,17 +66,17 @@ The application will be available at http://localhost:3000
 
 1. Build the Docker image:
 ```bash
-yarn docker:build
+pnpm docker:build
 ```
 
 2. Run the container:
 ```bash
-yarn docker:up
+pnpm docker:up
 ```
 
 3. Stop the container:
 ```bash
-yarn docker:down
+pnpm docker:down
 ```
 
 ## Technologies Used
